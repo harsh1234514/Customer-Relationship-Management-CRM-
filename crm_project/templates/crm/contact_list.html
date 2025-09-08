@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Contacts - CRM System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-users me-2"></i>Contacts</h1>
+            <a href="{% url 'contact_create' %}" class="btn btn-primary">
+                <i class="fas fa-user-plus me-1"></i>Add Contact
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search Form -->
+<div class="row mb-4">
+    <div class="col-12">
+        <form method="get" class="search-form">
+            <div class="row g-3">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" name="search" placeholder="Search contacts by name, email, or company..." value="{{ request.GET.search }}">
+                </div>
+                <div class="col-md-4">
+                    <div class="d-grid gap-2 d-md-flex">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search me-1"></i>Search
+                        </button>
+                        {% if request.GET.search %}
+                            <a href="{% url 'contact_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i>Clear
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Contacts Table -->
+<div class="row">
+    <div class="col-12">
+        {% if contacts %}
+            <div class="card">
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Company</th>
+                                    <th>Contact Info</th>
+                                    <th>Type</th>
+                                    <th>Assigned To</th>
+                                    <th>Created</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contact in contacts %}
+                                <tr>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="avatar-circle me-2">
+                                                {{ contact.first_name.0 }}{{ contact.last_name.0 }}
+                                            </div>
+                                            <div>
+                                                <strong>{{ contact.full_name }}</strong>
+                                                {% if contact.job_title %}
+                                                    <br><small class="text-muted">{{ contact.job_title }}</small>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'company_detail' contact.company.pk %}" class="text-decoration-none">
+                                            {{ contact.company.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div><i class="fas fa-envelope me-1 text-muted"></i>{{ contact.email }}</div>
+                                        {% if contact.phone %}
+                                            <div><i class="fas fa-phone me-1 text-muted"></i>{{ contact.phone }}</div>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="badge status-{{ contact.contact_type }}">
+                                            {{ contact.get_contact_type_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if contact.assigned_to %}
+                                            <small>{{ contact.assigned_to.first_name }} {{ contact.assigned_to.last_name }}</small>
+                                        {% else %}
+                                            <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">{{ contact.created_at|date:"M j, Y" }}</small>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'contact_detail' contact.pk %}" class="btn btn-outline-primary btn-sm" title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'contact_edit' contact.pk %}" class="btn btn-outline-warning btn-sm" title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            {% if contacts.has_other_pages %}
+                <nav aria-label="Contacts pagination" class="mt-4">
+                    <ul class="pagination">
+                        {% if contacts.has_previous %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">First</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ contacts.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Previous</a>
+                            </li>
+                        {% endif %}
+
+                        {% for num in contacts.paginator.page_range %}
+                            {% if contacts.number == num %}
+                                <li class="page-item active">
+                                    <span class="page-link">{{ num }}</span>
+                                </li>
+                            {% elif num > contacts.number|add:'-3' and num < contacts.number|add:'3' %}
+                                <li class="page-item">
+                                    <a class="page-link" href="?page={{ num }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">{{ num }}</a>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+
+                        {% if contacts.has_next %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ contacts.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Next</a>
+                            </li>
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ contacts.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}">Last</a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            {% endif %}
+
+        {% else %}
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                    {% if request.GET.search %}
+                        <h5>No contacts found</h5>
+                        <p class="text-muted">No contacts match your search criteria. Try adjusting your search terms.</p>
+                        <a href="{% url 'contact_list' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-times me-1"></i>Clear Search
+                        </a>
+                    {% else %}
+                        <h5>No contacts yet</h5>
+                        <p class="text-muted">Get started by adding your first contact to the system.</p>
+                        <a href="{% url 'contact_create' %}" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-1"></i>Add First Contact
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+.avatar-circle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+</style>
+{% endblock %}

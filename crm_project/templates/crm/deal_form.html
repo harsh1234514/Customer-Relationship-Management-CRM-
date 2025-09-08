@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2>{% if deal %}Edit Deal{% else %}Add New Deal{% endif %}</h2>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">
+        {% if deal %}Update{% else %}Create{% endif %}
+    </button>
+    <a href="{% url 'deal_list' %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

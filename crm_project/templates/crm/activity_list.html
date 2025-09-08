@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Activities{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2 class="mb-0">Activities</h2>
+    <a href="{% url 'activity_create' %}" class="btn btn-primary">+ Add Activity</a>
+  </div>
+
+  <form method="get" class="row g-2 mb-3">
+    <div class="col-md-3">
+      <input type="text" name="q" value="{{ request.GET.q }}" class="form-control" placeholder="Search title/description">
+    </div>
+    <div class="col-md-3">
+      <select name="status" class="form-select">
+        <option value="">All Statuses</option>
+        <option value="planned" {% if request.GET.status == "planned" %}selected{% endif %}>Planned</option>
+        <option value="completed" {% if request.GET.status == "completed" %}selected{% endif %}>Completed</option>
+        <option value="cancelled" {% if request.GET.status == "cancelled" %}selected{% endif %}>Cancelled</option>
+      </select>
+    </div>
+    <div class="col-md-3">
+      <select name="activity_type" class="form-select">
+        <option value="">All Types</option>
+        <option value="call" {% if request.GET.activity_type == "call" %}selected{% endif %}>Call</option>
+        <option value="email" {% if request.GET.activity_type == "email" %}selected{% endif %}>Email</option>
+        <option value="meeting" {% if request.GET.activity_type == "meeting" %}selected{% endif %}>Meeting</option>
+        <option value="task" {% if request.GET.activity_type == "task" %}selected{% endif %}>Task</option>
+        <option value="note" {% if request.GET.activity_type == "note" %}selected{% endif %}>Note</option>
+      </select>
+    </div>
+    <div class="col-md-3 d-flex gap-2">
+      <button class="btn btn-outline-secondary" type="submit">Filter</button>
+      <a class="btn btn-outline-dark" href="{% url 'activity_list' %}">Reset</a>
+    </div>
+  </form>
+
+  {% if activities %}
+    <div class="list-group">
+      {% for a in activities %}
+        <a href="{% url 'activity_detail' a.pk %}" class="list-group-item list-group-item-action">
+          <div class="d-flex w-100 justify-content-between">
+            <h5 class="mb-1">{{ a.title }}</h5>
+            <small class="text-muted">
+              Due: {{ a.due_date|date:"M d, Y H:i" }}
+            </small>
+          </div>
+          <p class="mb-1 text-muted">{{ a.description|default:"No description" }}</p>
+          <small>
+            Type: {{ a.get_activity_type_display }} ·
+            Status: 
+            {% if a.status == "completed" %}
+              <span class="badge bg-success">Completed</span>
+            {% elif a.status == "planned" %}
+              <span class="badge bg-info text-dark">Planned</span>
+            {% elif a.status == "cancelled" %}
+              <span class="badge bg-secondary">Cancelled</span>
+            {% else %}
+              {{ a.get_status_display }}
+            {% endif %}
+            {% if a.contact %} · Contact: {{ a.contact.full_name }}{% endif %}
+            {% if a.deal %} · Deal: {{ a.deal.title }}{% endif %}
+          </small>
+        </a>
+      {% endfor %}
+    </div>
+
+    {% if is_paginated %}
+      <nav class="mt-3">
+        <ul class="pagination">
+          {% if page_obj.has_previous %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Previous</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Previous</span></li>
+          {% endif %}
+          <li class="page-item disabled"><span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span></li>
+          {% if page_obj.has_next %}
+            <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}{% if request.GET.q %}&q={{ request.GET.q }}{% endif %}">Next</a></li>
+          {% else %}
+            <li class="page-item disabled"><span class="page-link">Next</span></li>
+          {% endif %}
+        </ul>
+      </nav>
+    {% endif %}
+  {% else %}
+    <div class="alert alert-info">No activities found.</div>
+  {% endif %}
+</div>
+{% endblock %}

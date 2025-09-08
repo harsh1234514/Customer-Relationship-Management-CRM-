@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Lead · {{ lead.first_name }} {{ lead.last_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>{{ lead.first_name }} {{ lead.last_name }}</h2>
+  <p><strong>Email:</strong> {{ lead.email }}</p>
+  <p><strong>Phone:</strong> {{ lead.phone }}</p>
+  <p><strong>Company:</strong> {{ lead.company_name }}</p>
+  <p><strong>Job Title:</strong> {{ lead.job_title }}</p>
+  <p><strong>Status:</strong> {{ lead.status }}</p>
+  <p><strong>Source:</strong> {{ lead.source }}</p>
+  <p><strong>Notes:</strong> {{ lead.notes }}</p>
+  <p><strong>Assigned To:</strong> {{ lead.assigned_to }}</p>
+
+  <div class="d-flex gap-2 mt-3">
+    <a href="{% url 'lead_list' %}" class="btn btn-secondary">Back to List</a>
+    <a href="{% url 'lead_create' %}" class="btn btn-primary">Add Another Lead</a>
+
+    {% if user.is_superuser or lead.assigned_to == user %}
+    <form method="post" action="{% url 'lead_delete' lead.pk %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Delete</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

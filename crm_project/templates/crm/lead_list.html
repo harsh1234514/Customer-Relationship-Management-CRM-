@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}All Leads - CRM{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>All Leads</h1>
+            <a href="{% url 'add_lead' %}" class="btn btn-primary">Add Lead</a>
+        </div>
+
+        {% if leads %}
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Company</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for lead in leads %}
+                    <tr>
+                        <td>{{ lead.first_name }} {{ lead.last_name }}</td>
+                        <td>{{ lead.email }}</td>
+                        <td>{{ lead.phone }}</td>
+                        <td>{{ lead.company_name }}</td>
+                        <td>{{ lead.status }}</td>
+                        <td>
+                            <a href="{% url 'lead_detail' lead.pk %}" class="btn btn-sm btn-outline-primary">View</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>No leads yet. Click "Add Lead" to create one.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
